@@ -1,0 +1,6 @@
+telethon
+pandas
+psycopg2-binary
+sqlalchemy
+seaborn
+tqdm
