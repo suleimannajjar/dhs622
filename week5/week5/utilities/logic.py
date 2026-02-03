@@ -102,7 +102,7 @@ def retrieve_and_save_channel_metadata(
         insert_data_into_seed_table(seed_records)
 
 
-def get_names_of_seed_lists() -> list[dict]:
+def get_names_of_seed_lists() -> list[str]:
     return fetch_seed_list_names()
 
 

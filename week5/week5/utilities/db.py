@@ -163,7 +163,7 @@ def insert_data_into_channel_messages_table(records: list[dict]):
     return
 
 
-def fetch_seed_list_names() -> list[dict]:
+def fetch_seed_list_names() -> list[str]:
     with engine.connect() as conn:
         rp = conn.execute(
             sa.select(seed_table.c.seed_list).distinct(seed_table.c.seed_list)
