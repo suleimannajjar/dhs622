@@ -1,0 +1,6 @@
+telethon
+pandas
+dash
+dash-cytoscape
+networkx
+python-louvain
