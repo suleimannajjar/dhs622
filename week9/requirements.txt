@@ -1,0 +1,11 @@
+telethon
+psycopg2-binary
+sqlalchemy
+pika
+dash
+pandas
+black
+fastapi
+uvicorn
+passlib
+python-jose
