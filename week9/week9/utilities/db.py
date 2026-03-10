@@ -342,6 +342,47 @@ def fetch_metadata_for_single_channel(channel_id: int) -> dict:
     assert len(records) == 1
     return records[0]
 
+def look_up_channel_id_with_channel_name(channel_name: str) -> int|None:
+    # Look up the channel ID for a given channel name:
+    with engine.connect() as conn:
+        rp = conn.execute(
+            sa.select(seed_table.c.channel_id).where(seed_table.c.channel_name == channel_name)
+        )
+        channel_id = rp.fetchone()
+    if channel_id is None:
+        return None
+    return channel_id[0]
+
+def fetch_target_start_date(channel_name: str):
+    """
+    We are looking up the new messages for a given channel. Possibly, this channel is completely new to our seed list
+    so we want to retrieve their messages all the way back to the beginning of their timeline.
+    Alternatively, it might be a channel we've tracked before, so we just want to get their new messages (back to, say,
+    Jan 31st, 2026).
+
+    This function should figure out what to do:
+    (1) query the database to see if we've ever tracked this channel before, and
+    (2) if so, when last did we do that
+    """
+
+    channel_id = look_up_channel_id_with_channel_name(channel_name)
+    if channel_id is None: # we don't have this channel in our database yet
+        return datetime.strptime("2010-01-01", "%Y-%m-%d").date()
+
+    with engine.connect() as conn:
+        rp = conn.execute(
+            sa.select(channel_message_table.c.message_datetime).where(channel_message_table.c.channel_id == channel_id)
+        )
+        message_datetimes = rp.fetchall() # message_datetimes = []
+
+    if len(message_datetimes) == 0:
+        return datetime.strptime("2010-01-01", "%Y-%m-%d").date()
+
+    most_recent_message_datetime = max(message_datetimes)[0]
+    most_recent_message_date = most_recent_message_datetime.date()
+
+    return most_recent_message_date
+
 
 def fetch_domain_edges(
     seed_channel_ids: list, start_date: str, end_date: str

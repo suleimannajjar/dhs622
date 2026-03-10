@@ -5,6 +5,7 @@ from networkx.classes.digraph import DiGraph
 import community
 from urllib.parse import urlparse
 import time
+from datetime import datetime
 
 from telethon.errors.rpcerrorlist import UsernameInvalidError
 from telethon.sync import TelegramClient
@@ -25,6 +26,7 @@ from .db import (
     fetch_weighted_edges_fwd_network,
     fetch_domain_edges,
     fetch_metadata_for_single_channel,
+    fetch_target_start_date
 )
 
 SECONDS_TO_PAUSE_BETWEEN_CHANNEL_INFO_LOOKUPS = 30
@@ -242,6 +244,10 @@ def extract_data_from_message_object(message: TelegramMessage) -> dict:
 def retrieve_channel_messages_from_telegram(
     channel_name: str, app_name: str, api_id: int, api_hash: str
 ) -> list[dict]:
+
+    # get the date back to which we should retrieve messages:
+    target_start_date = fetch_target_start_date(channel_name)
+
     new_max_id = 0
     messages = []
     with TelegramClient(app_name, api_id, api_hash) as client:
@@ -267,6 +273,13 @@ def retrieve_channel_messages_from_telegram(
 
             # Stopping condition
             if len(new_messages) < 100:
+                break
+
+            earliest_message_datetime_for_this_batch = min([message.to_dict()["date"] for message in new_messages])
+            print(f"we have gone back to {earliest_message_datetime_for_this_batch.strftime('%Y-%m-%d %H:%M:%S')}")
+
+            if earliest_message_datetime_for_this_batch.date() < target_start_date.date():
+                print(f"we've gone back far enough!")
                 break
 
             # Respectful pause so as not to flood the API
