@@ -2,7 +2,7 @@ from dash import Dash, dcc, html, Input, Output
 import dash
 
 import secrets
-from .pages import welcome, analyze
+from .pages import welcome, analyze as analyze
 
 app = Dash(__name__, suppress_callback_exceptions=True)
 server = app.server
