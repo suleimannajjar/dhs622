@@ -1,6 +1,6 @@
 import os
 from week9.config import HOME_DIR
-from week9.utilities.logic1 import make_forward_network
+from week9.utilities.logic import make_forward_network
 import networkx as nx
 
 
