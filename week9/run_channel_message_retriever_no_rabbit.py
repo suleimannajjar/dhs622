@@ -15,7 +15,7 @@ import pandas as pd
 
 if __name__ == '__main__':
     seed_list_name = 'russian_disinfo'
-    my_input_csv = os.path.join(INPUT_DIR, 'russian_disinfo.csv')
+    my_input_csv = os.path.join(INPUT_DIR, f'{seed_list_name}.csv')
     channel_df = pd.read_csv(my_input_csv)
     channel_names = list([x.lower() for x in list(channel_df['handle'])])
 
