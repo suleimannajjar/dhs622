@@ -31,6 +31,20 @@ def post_seed_list_preview_api(seed_list_names: list[str]) -> list[dict]:
 
     return resp.json()["data"]
 
+def post_seed_metadata_full_api(seed_list_names: list[str]) -> list[dict]:
+    resp = requests.post(
+        urljoin(api_base, "seed_metadata_full"),
+        json={"seed_list_names": seed_list_names},
+    )
+    resp.raise_for_status()
+
+    records = resp.json()["data"]
+    for record in records:
+        record["channel_birthdate"] = str(
+            record["channel_birthdate"]
+        )
+    return records
+
 
 def post_birth_chart_api(
     unit: str, seed_list_names: list[str]
