@@ -13,10 +13,34 @@ from ..utilities.logic import (
     make_domain_network
 )
 
+from ..utilities.security_logic import check_credentials, create_jwt, verify_token, parse_token_from_starlette
+
 router = APIRouter()
+
+@router.get("/login")
+async def login_api(
+    request: Request
+):
+    return {"data": "ah ah ah! you didn't say the magic word!!"}
+
+@router.post("/login")
+async def login_api(
+    request: Request, email: str = Body(embed=True), password: str = Body(embed=True)
+):
+    # (1) check if this email is in our database; if not, return HTTP 401
+    result = check_credentials(email)
+    if result is None:
+        raise HTTPException(status_code=401, detail="ah ah ah, you didn't say the magic word!")
+    # (2) if so, check if the password is correct; if not, return HTTP 401
+    if password != result["password"]:
+        raise HTTPException(status_code=401, detail="ah ah ah, you didn't say the magic word!")
+    # (3) if so, create an unguessable token and return it
+    token = create_jwt(email)
+    return {"token": token}
 
 @router.get("/seed_list_names")
 async def seed_list_names_api(request: Request):
+    email = verify_token(parse_token_from_starlette(request))
     return {"data": get_names_of_seed_lists()}
 
 
@@ -24,6 +48,7 @@ async def seed_list_names_api(request: Request):
 async def seed_list_preview_api(
     request: Request, seed_list_names: list = Body(embed=True)
 ):
+    email = verify_token(parse_token_from_starlette(request))
     return {"data": get_seed_list_preview(seed_list_names)}
 
 
@@ -31,6 +56,7 @@ async def seed_list_preview_api(
 async def seed_metadata_full_api(
     request: Request, seed_list_names: list[str] = Body(embed=True)
 ):
+    email = verify_token(parse_token_from_starlette(request))
     records = get_seed_channel_metadata(seed_list_names)
 
     # Convert datetime to string
@@ -46,6 +72,7 @@ async def birth_chart_api(
     unit: str = Body(embed=True),
     seed_list_names: list = Body(embed=True),
 ):
+    email = verify_token(parse_token_from_starlette(request))
     records = get_birth_chart_data(unit, seed_list_names)
 
     records = [
@@ -67,6 +94,7 @@ async def make_forward_network_api(
     seed_list_names: list = Body(embed=True),
     network_max_size: int = Body(embed=True),
 ):
+    email = verify_token(parse_token_from_starlette(request))
     if network_max_size == 0:
         network_max_size = None
 
@@ -94,6 +122,7 @@ async def time_series_chart_api(
     start_date: str = Body(embed=True),
     end_date: str = Body(embed=True),
 ):
+    email = verify_token(parse_token_from_starlette(request))
     records = get_time_series_chart_data(start_date, end_date, unit, seed_list_names)
 
     records = [
@@ -115,6 +144,7 @@ async def render_message_table_api(
     seed_list_names: list = Body(embed=True),
     the_limit: int = Body(embed=True),
 ):
+    email = verify_token(parse_token_from_starlette(request))
     if the_limit == 0:
         the_limit = None
     records = render_message_table(start_date, end_date, seed_list_names, the_limit)
@@ -134,6 +164,7 @@ async def render_domain_table_api(
     end_date: str = Body(embed=True),
     seed_list_names: list = Body(embed=True),
 ):
+    email = verify_token(parse_token_from_starlette(request))
     return {"data": make_domain_table(seed_list_names, start_date, end_date)}
 
 
@@ -145,6 +176,7 @@ async def make_domain_network_api(
     seed_list_names: list = Body(embed=True),
     network_max_size: int = Body(embed=True),
 ):
+    email = verify_token(parse_token_from_starlette(request))
     if network_max_size == 0:
         network_max_size = None
 

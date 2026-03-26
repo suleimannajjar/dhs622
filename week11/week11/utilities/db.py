@@ -4,6 +4,33 @@ from datetime import datetime
 from ..config import config
 
 
+def instantiate_credentials_table(my_table_name: str) -> SQLAlchemyTable:
+    my_table = sa.Table(
+        my_table_name,
+        meta,
+        sa.Column("email", sa.types.TEXT, primary_key=True),
+        sa.Column("password", sa.types.TEXT, nullable=False),
+    )
+    return my_table
+
+def insert_data_into_credentials_table(records: list[dict]) -> None:
+    stmt = sa.insert(credentials_table).values(records)
+    with engine.connect() as conn:
+        conn.execute(stmt)
+        conn.commit()
+    return
+
+def fetch_credentials_if_exist(email: str) -> dict|None:
+    with engine.connect() as conn:
+        rp = conn.execute(
+            sa.select(credentials_table).where(credentials_table.c.email == email)
+        )
+    records = [dict(elt._mapping) for elt in rp.fetchall()]
+    if records == []:
+        return None
+    assert len(records) == 1
+    return records[0]
+
 def instantiate_channel_metadata_table(my_table_name: str) -> SQLAlchemyTable:
     my_table = sa.Table(
         my_table_name,
@@ -422,6 +449,7 @@ channel_message_table_name = "channel_messages"
 channel_metadata_table_name = "channel_metadata"
 seed_table_name = "seeds"
 investigators_table_name = "investigators"
+credentials_table_name = "credentials"
 
 
 engine = sa.create_engine(
@@ -442,4 +470,5 @@ meta = sa.MetaData()
 channel_message_table = instantiate_channel_messages_table(channel_message_table_name)
 channel_metadata_table = instantiate_channel_metadata_table(channel_metadata_table_name)
 seed_table = instantiate_seed_table(seed_table_name)
+credentials_table = instantiate_credentials_table(credentials_table_name)
 meta.create_all(engine)
