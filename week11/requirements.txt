@@ -11,3 +11,5 @@ black
 fastapi
 uvicorn
 requests
+passlib
+python-jose
